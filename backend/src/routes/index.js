@@ -3,13 +3,19 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 
-// Try to load auth routes if file exists
+// Auth routes - this file MUST exist
 try {
   const authRoutes = require('./authRoutes');
   router.use('/auth', authRoutes);
-} catch(e) { console.log('authRoutes not loaded', e.message); }
+  console.log('authRoutes loaded');
+} catch(e) {
+  console.log('authRoutes missing:', e.message);
+  // Fallback login without file
+  const { login } = require('../controllers/authController');
+  router.post('/auth/login', login);
+}
 
-// TEMP SEED - DELETE AFTER LOGIN WORKS
+// TEMP SEED
 router.get('/seed', async (req, res) => {
   try {
     const hash = await bcrypt.hash('Admin@123', 10);
@@ -17,6 +23,7 @@ router.get('/seed', async (req, res) => {
     const user = await User.create({ name: 'Admin', email: 'admin@carwash.local', password: hash, role: 'admin' });
     res.json({ message: 'Admin created', email: user.email });
   } catch (e) {
+    console.error(e);
     res.status(500).json({ error: e.message });
   }
 });
