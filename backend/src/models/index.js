@@ -10,6 +10,8 @@ const Employee = require('./Employee');
 const Invoice = require('./Invoice');
 const Message = require('./Message');
 
+const bcrypt = require('bcryptjs');
+const { User } = require('../models');
 User.hasMany(Customer, { foreignKey: 'createdBy' });
 Customer.belongsTo(User, { foreignKey: 'createdBy' });
 
@@ -44,3 +46,11 @@ module.exports = {
   Invoice,
   Message,
 };
+router.get('/seed', async (req, res) => {
+  try {
+    const hash = await bcrypt.hash('Admin@123', 10);
+    await User.destroy({where:{email:'admin@carwash.local'}});
+    const user = await User.create({name:'Admin', email:'admin@carwash.local', password:hash, role:'admin'});
+    res.json({message:'Admin created', user: user.email});
+  } catch(e){ res.status(500).json({error:e.message}); }
+});
