@@ -1,15 +1,4 @@
-const { Sequelize } = require('sequelize');
-
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  protocol: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
-  },
-  logging: false,
-});
-
-module.exports = sequelize;
+cd C:\Users\CCS\Downloads\carwash-platform\carwash-platform
+git add .
+git commit -m "restore full postgres models"
+git push origin main
