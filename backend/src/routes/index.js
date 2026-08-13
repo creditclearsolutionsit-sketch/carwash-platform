@@ -3,17 +3,11 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 
-const authRoutes = require('./authRoutes');
-const customerRoutes = require('./customerRoutes');
-const bookingRoutes = require('./bookingRoutes');
-const serviceRoutes = require('./serviceRoutes');
-const inventoryRoutes = require('./inventoryRoutes');
-
-router.use('/auth', authRoutes);
-router.use('/customers', customerRoutes);
-router.use('/bookings', bookingRoutes);
-router.use('/services', serviceRoutes);
-router.use('/inventory', inventoryRoutes);
+// Try to load auth routes if file exists
+try {
+  const authRoutes = require('./authRoutes');
+  router.use('/auth', authRoutes);
+} catch(e) { console.log('authRoutes not loaded', e.message); }
 
 // TEMP SEED - DELETE AFTER LOGIN WORKS
 router.get('/seed', async (req, res) => {
