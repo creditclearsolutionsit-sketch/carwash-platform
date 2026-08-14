@@ -1,7 +1,10 @@
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
-const sequelize = require('../config/db');
-const { Branch, User, ServiceCatalog, Customer, Vehicle } = require('../models');
+const password_hash = await bcrypt.hash('Admin@123', 10);
+await sequelize.query(
+  "INSERT INTO \"Users\" (name,email,password_hash,role,\"BranchId\",\"createdAt\",\"updatedAt\") VALUES ('Admin','admin@carwash.local',:hash,'admin',1,NOW(),NOW()) ON CONFLICT (email) DO UPDATE SET password_hash = :hash",
+  { replacements: { hash: password_hash } }
+);
 
 async function seed() {
   await sequelize.sync({ force: false });
