@@ -6,7 +6,9 @@ const authRoutes = require('./authRoutes');
 
 router.get('/seed', async (req,res)=>{
   try{
-    const hash = await bcrypt.hash('Admin@123',10);
+    const adminHash = await bcrypt.hash('Admin@123',10);
+    const managerHash = await bcrypt.hash('Manager@123',10);
+    const staffHash = await bcrypt.hash('Staff@123',10);
 
     await sequelize.query(`DROP TABLE IF EXISTS "Users" CASCADE`);
     await sequelize.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
@@ -23,19 +25,25 @@ router.get('/seed', async (req,res)=>{
         "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL
       )
     `);
-
     await sequelize.query(`CREATE TABLE IF NOT EXISTS "Branches" (id SERIAL PRIMARY KEY, name VARCHAR(255), address VARCHAR(255), "createdAt" TIMESTAMP, "updatedAt" TIMESTAMP)`);
     await sequelize.query(`INSERT INTO "Branches" (id, name, address, "createdAt", "updatedAt") VALUES (1, 'Main Branch', '123 Main Rd', NOW(), NOW()) ON CONFLICT (id) DO NOTHING`);
 
-    await sequelize.query(
-      `INSERT INTO "Users" (name, email, password, password_hash, role, "BranchId", "createdAt", "updatedAt") VALUES ('Admin', 'admin@carwash.local', :hash, :hash, 'admin', 1, NOW(), NOW())`,
-      { replacements: { hash } }
-    );
+    await sequelize.query(`DELETE FROM "Users" WHERE email IN ('admin@carwash.local','manager@carwash.local','staff@carwash.local')`);
+    
+    await sequelize.query(`INSERT INTO "Users" (name, email, password, password_hash, role, "BranchId", "createdAt", "updatedAt") VALUES ('Admin', 'admin@carwash.local', :h1, :h1, 'admin', 1, NOW(), NOW())`, {replacements:{h1:adminHash}});
+    await sequelize.query(`INSERT INTO "Users" (name, email, password, password_hash, role, "BranchId", "createdAt", "updatedAt") VALUES ('Manager', 'manager@carwash.local', :h2, :h2, 'manager', 1, NOW(), NOW())`, {replacements:{h2:managerHash}});
+    await sequelize.query(`INSERT INTO "Users" (name, email, password, password_hash, role, "BranchId", "createdAt", "updatedAt") VALUES ('Staff', 'staff@carwash.local', :h3, :h3, 'staff', 1, NOW(), NOW())`, {replacements:{h3:staffHash}});
 
-    res.json({ok:true, message:'Admin created with BOTH columns - login now'});
+    res.json({
+      ok:true,
+      logins:[
+        {email:'admin@carwash.local', password:'Admin@123', role:'admin'},
+        {email:'manager@carwash.local', password:'Manager@123', role:'manager'},
+        {email:'staff@carwash.local', password:'Staff@123', role:'staff'}
+      ]
+    });
   }catch(e){
-    console.error(e);
-    res.status(500).json({error:e.message, stack:e.stack});
+    res.status(500).json({error:e.message});
   }
 });
 
