@@ -1,9 +1,13 @@
+const express = require('express');
+const router = express.Router();
+const sequelize = require('../config/db');
+const bcrypt = require('bcryptjs');
+const { Branch, User } = require('../models');
+const authRoutes = require('./authRoutes');
+
+// Seed - FIXED VERSION (does NOT drop table)
 router.get('/seed', async (req,res)=>{
   try{
-    const bcrypt = require('bcryptjs');
-    const { Branch, User } = require('../models');
-    const sequelize = require('../config/db');
-
     const hash = await bcrypt.hash('Admin@123',10);
     console.log('HASH:', hash);
 
@@ -28,3 +32,11 @@ router.get('/seed', async (req,res)=>{
     res.status(500).json({error:e.message, stack:e.stack});
   }
 });
+
+// mount other routes
+router.use('/auth', authRoutes);
+
+// add other routes here if you had them before
+// router.use('/branches',...)
+
+module.exports = router;
